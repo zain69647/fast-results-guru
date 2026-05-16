@@ -81,6 +81,16 @@ function Index() {
       try {
         const method = (form.getAttribute("method") || "GET").toUpperCase();
         const fd = new FormData(form);
+        const submitter = (e as SubmitEvent).submitter;
+        const submitControl =
+          submitter instanceof HTMLInputElement || submitter instanceof HTMLButtonElement
+            ? submitter
+            : form.querySelector<HTMLInputElement | HTMLButtonElement>(
+                "input[type='submit'], button[type='submit'], button:not([type])",
+              );
+        if (submitControl?.name && !fd.has(submitControl.name)) {
+          fd.append(submitControl.name, submitControl.value || submitControl.textContent || "Submit");
+        }
         let res: Response;
         if (method === "POST") {
           const body = new URLSearchParams();
