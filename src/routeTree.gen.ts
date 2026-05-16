@@ -10,17 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiProxyRouteImport } from './routes/api/proxy'
 import { Route as ApiProxyIndexRouteImport } from './routes/api/proxy/index'
+import { Route as ApiProxySubmitRouteImport } from './routes/api/proxy/submit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiProxyRoute = ApiProxyRouteImport.update({
-  id: '/api/proxy',
-  path: '/api/proxy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiProxyIndexRoute = ApiProxyIndexRouteImport.update({
@@ -28,33 +23,39 @@ const ApiProxyIndexRoute = ApiProxyIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ApiProxyRoute,
 } as any)
+const ApiProxySubmitRoute = ApiProxySubmitRouteImport.update({
+  id: '/api/proxy/submit',
+  path: '/api/proxy/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/api/proxy': typeof ApiProxyRouteWithChildren
+  '/api/proxy/submit': typeof ApiProxySubmitRoute
   '/api/proxy/': typeof ApiProxyIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/proxy/submit': typeof ApiProxySubmitRoute
   '/api/proxy': typeof ApiProxyIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/api/proxy': typeof ApiProxyRouteWithChildren
+  '/api/proxy/submit': typeof ApiProxySubmitRoute
   '/api/proxy/': typeof ApiProxyIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/proxy' | '/api/proxy/'
+  fullPaths: '/' | '/api/proxy/submit' | '/api/proxy/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/proxy'
-  id: '__root__' | '/' | '/api/proxy' | '/api/proxy/'
+  to: '/' | '/api/proxy/submit' | '/api/proxy'
+  id: '__root__' | '/' | '/api/proxy/submit' | '/api/proxy/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ApiProxyRoute: typeof ApiProxyRouteWithChildren
+  ApiProxySubmitRoute: typeof ApiProxySubmitRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -66,13 +67,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/proxy': {
-      id: '/api/proxy'
-      path: '/api/proxy'
-      fullPath: '/api/proxy'
-      preLoaderRoute: typeof ApiProxyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/proxy/': {
       id: '/api/proxy/'
       path: '/'
@@ -80,25 +74,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProxyIndexRouteImport
       parentRoute: typeof ApiProxyRoute
     }
+    '/api/proxy/submit': {
+      id: '/api/proxy/submit'
+      path: '/api/proxy/submit'
+      fullPath: '/api/proxy/submit'
+      preLoaderRoute: typeof ApiProxySubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
-interface ApiProxyRouteChildren {
-  ApiProxyIndexRoute: typeof ApiProxyIndexRoute
-}
-
-const ApiProxyRouteChildren: ApiProxyRouteChildren = {
-  ApiProxyIndexRoute: ApiProxyIndexRoute,
-}
-
-const ApiProxyRouteWithChildren = ApiProxyRoute._addFileChildren(
-  ApiProxyRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApiProxyRoute: ApiProxyRouteWithChildren,
+  ApiProxySubmitRoute: ApiProxySubmitRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
