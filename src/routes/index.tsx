@@ -103,10 +103,10 @@ function Index() {
     };
 
     root.addEventListener("click", onClick);
-    root.addEventListener("submit", onSubmit as EventListener);
+    root.addEventListener("submit", onSubmit);
     return () => {
       root.removeEventListener("click", onClick);
-      root.removeEventListener("submit", onSubmit as EventListener);
+      root.removeEventListener("submit", onSubmit);
     };
   }, [html]);
 
