@@ -19,9 +19,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiProxyIndexRoute = ApiProxyIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ApiProxyRoute,
+  id: '/api/proxy/',
+  path: '/api/proxy/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiProxySubmitRoute = ApiProxySubmitRouteImport.update({
   id: '/api/proxy/submit',
@@ -56,6 +56,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiProxySubmitRoute: typeof ApiProxySubmitRoute
+  ApiProxyIndexRoute: typeof ApiProxyIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -69,10 +70,10 @@ declare module '@tanstack/react-router' {
     }
     '/api/proxy/': {
       id: '/api/proxy/'
-      path: '/'
+      path: '/api/proxy'
       fullPath: '/api/proxy/'
       preLoaderRoute: typeof ApiProxyIndexRouteImport
-      parentRoute: typeof ApiProxyRoute
+      parentRoute: typeof rootRouteImport
     }
     '/api/proxy/submit': {
       id: '/api/proxy/submit'
@@ -87,17 +88,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiProxySubmitRoute: ApiProxySubmitRoute,
+  ApiProxyIndexRoute: ApiProxyIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
