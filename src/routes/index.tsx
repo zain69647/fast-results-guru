@@ -71,7 +71,7 @@ function Index() {
       }
     };
 
-    const onSubmit = async (e: SubmitEvent) => {
+    const onSubmit = async (e: Event) => {
       const form = e.target as HTMLFormElement;
       const action = form.getAttribute("action") || "";
       if (!action.startsWith("/api/proxy/submit")) return;
