@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiProxyRouteImport } from './routes/api/proxy'
+import { Route as ApiProxyIndexRouteImport } from './routes/api/proxy/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,38 @@ const ApiProxyRoute = ApiProxyRouteImport.update({
   path: '/api/proxy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiProxyIndexRoute = ApiProxyIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ApiProxyRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/api/proxy': typeof ApiProxyRoute
+  '/api/proxy': typeof ApiProxyRouteWithChildren
+  '/api/proxy/': typeof ApiProxyIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/api/proxy': typeof ApiProxyRoute
+  '/api/proxy': typeof ApiProxyIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/api/proxy': typeof ApiProxyRoute
+  '/api/proxy': typeof ApiProxyRouteWithChildren
+  '/api/proxy/': typeof ApiProxyIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/proxy'
+  fullPaths: '/' | '/api/proxy' | '/api/proxy/'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/api/proxy'
-  id: '__root__' | '/' | '/api/proxy'
+  id: '__root__' | '/' | '/api/proxy' | '/api/proxy/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ApiProxyRoute: typeof ApiProxyRoute
+  ApiProxyRoute: typeof ApiProxyRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -65,13 +73,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProxyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/proxy/': {
+      id: '/api/proxy/'
+      path: '/'
+      fullPath: '/api/proxy/'
+      preLoaderRoute: typeof ApiProxyIndexRouteImport
+      parentRoute: typeof ApiProxyRoute
+    }
   }
 }
 
+interface ApiProxyRouteChildren {
+  ApiProxyIndexRoute: typeof ApiProxyIndexRoute
+}
+
+const ApiProxyRouteChildren: ApiProxyRouteChildren = {
+  ApiProxyIndexRoute: ApiProxyIndexRoute,
+}
+
+const ApiProxyRouteWithChildren = ApiProxyRoute._addFileChildren(
+  ApiProxyRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApiProxyRoute: ApiProxyRoute,
+  ApiProxyRoute: ApiProxyRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
